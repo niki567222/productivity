@@ -14,8 +14,8 @@ public class EntryActivity extends Activity {
         long slot = getIntent().getLongExtra("slot", Alarms.prefs(this).getLong("pending", System.currentTimeMillis()));
         LinearLayout root = Ui.column(this);
         root.addView(Ui.text(this,"МОЙ ДЕНЬ · ЗАПИСЬ",14)); root.addView(Ui.text(this,"Чем ты занимаешься?",30));
-        root.addView(Ui.text(this,"Пара слов о последних 15 минутах. Запись останется на устройстве.",16));
-        EditText input = new EditText(this); input.setId(R.id.entry_input); input.setHint("Например: ем, смотрю TikTok"); input.setGravity(Gravity.TOP); input.setMinLines(5); input.setInputType( android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE | android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
+        root.addView(Ui.text(this,"Пара слов о том, что ты делаешь. Запись останется на устройстве.",16));
+        EditText input = new EditText(this); input.setId(R.id.entry_input); Ui.input(this,input); input.setHint("Например: ем, смотрю TikTok"); input.setGravity(Gravity.TOP); input.setMinLines(5); input.setInputType( android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE | android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
         root.addView(input,new LinearLayout.LayoutParams(-1,0,1));
         TextView hint = Ui.text(this,"Минимум 5 символов",14); root.addView(hint);
         Button save = Ui.button(this,"Сохранить"); save.setVisibility(View.INVISIBLE); root.addView(save);

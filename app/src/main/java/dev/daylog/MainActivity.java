@@ -17,7 +17,18 @@ public class MainActivity extends Activity {
         root.addView(Ui.text(this,"ЛИЧНЫЙ ТРЕКЕР",14)); root.addView(Ui.text(this,"Мой день",34));
         root.addView(Ui.text(this,"Остановись на минуту. Заметь, куда уходит время.",17));
         boolean enabled=Alarms.prefs(this).getBoolean("enabled",false);
-        status=Ui.text(this,enabled ? "● Напоминания включены · каждые 15 минут":"○ Напоминания выключены",17); root.addView(status);
+        status=Ui.text(this,enabled ? "● Напоминания включены · каждые " + Alarms.minutes(this) + " мин.":"○ Напоминания выключены",17); root.addView(status);
+        root.addView(Ui.text(this,"ИНТЕРВАЛ ПРОВЕРКИ",13));
+        int[] intervals = {5, 10, 15};
+        int selected = Alarms.minutes(this)==5 ? 0 : Alarms.minutes(this)==10 ? 1 : 2;
+        root.addView(Ui.choices(this,new String[]{"5 минут","10 минут","15 минут"},selected,index->{
+            Alarms.prefs(this).edit().putInt("minutes",intervals[index]).apply();
+            if(enabled) Alarms.schedule(this); render();
+        }));
+        root.addView(Ui.text(this,"РЕЖИМ СИГНАЛА",13));
+        root.addView(Ui.choices(this,new String[]{"Тихо\nбез вибрации", "Вибрация", "Вибрация\n+ звук"},Alarms.mode(this),index->{
+            Alarms.prefs(this).edit().putInt("mode",index).apply(); Alarms.channel(this); render();
+        }));
         Button toggle=Ui.button(this,enabled?"Выключить":"Включить напоминания"); root.addView(toggle);
         toggle.setOnClickListener(v->{
             if(enabled) { Alarms.stop(this); render(); return; }
@@ -40,8 +51,9 @@ public class MainActivity extends Activity {
         export.setOnClickListener(v->startActivityForResult(new Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("text/plain").putExtra(Intent.EXTRA_TITLE,"my-days.txt"),2));
         root.addView(Ui.text(this,"История по дням",23));
         ScrollView scroll=new ScrollView(this); String history; try(Store db=new Store(this)){history=db.export();}
-        scroll.addView(Ui.text(this,history.isEmpty()?"Здесь появится твоя первая запись.":history,16)); root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
-        setContentView(root);
+        TextView entries=Ui.text(this,history.isEmpty()?"Здесь появится твоя первая запись.":history,16);
+        entries.setTextColor(Ui.WHITE); entries.setTextIsSelectable(true); entries.setPadding(Ui.dp(this,16),Ui.dp(this,16),Ui.dp(this,16),Ui.dp(this,16)); entries.setBackground(Ui.panel(0x99111c3b,this)); root.addView(entries);
+        scroll.setFillViewport(true); scroll.addView(root); setContentView(scroll);
     }
     protected void onActivityResult(int request,int result,Intent data) {
         super.onActivityResult(request,result,data);
