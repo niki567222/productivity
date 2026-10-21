@@ -8,7 +8,7 @@ import android.widget.*;
 
 final class Ui {
     static final int WHITE = Color.rgb(235,240,255), MUTED = Color.rgb(159,177,215);
-    static int dp(Activity a, int n) { return (int)(n * a.getResources().getDisplayMetrics().density); }
+    static int dp(android.content.Context a, int n) { return (int)(n * a.getResources().getDisplayMetrics().density); }
     static class NightLayout extends LinearLayout {
         final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         final ValueAnimator animator = ValueAnimator.ofFloat(0, (float)(Math.PI * 2));
@@ -52,19 +52,19 @@ final class Ui {
         l.setPadding(dp(a,24),dp(a,24),dp(a,24),dp(a,24));
         l.setOnApplyWindowInsetsListener((v,i)->{v.setPadding(dp(a,24)+i.getSystemWindowInsetLeft(),dp(a,24)+i.getSystemWindowInsetTop(),dp(a,24)+i.getSystemWindowInsetRight(),dp(a,24)+i.getSystemWindowInsetBottom());return i;}); return l;
     }
-    static GradientDrawable panel(int color, Activity a) {
+    static GradientDrawable panel(int color, android.content.Context a) {
         GradientDrawable d = new GradientDrawable(); d.setColor(color); d.setCornerRadius(dp(a,18)); d.setStroke(dp(a,1),0x304e79b4); return d;
     }
-    static TextView text(Activity a, String s, int size) {
+    static TextView text(android.content.Context a, String s, int size) {
         TextView t=new TextView(a); t.setText(s); t.setTextSize(size); t.setTextColor(size<=16?MUTED:WHITE); t.setPadding(0,dp(a,8),0,dp(a,8));
         if(size>=23)t.setTypeface(android.graphics.Typeface.DEFAULT,android.graphics.Typeface.BOLD); return t;
     }
-    static Button button(Activity a, String s) {
+    static Button button(android.content.Context a, String s) {
         Button b=new Button(a); b.setText(s); b.setTextSize(15); b.setAllCaps(false); b.setTextColor(WHITE);
         b.setBackground(new android.graphics.drawable.RippleDrawable(android.content.res.ColorStateList.valueOf(0x445a9fff),panel(0xcc283e78,a),null));
         LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,dp(a,52)); p.setMargins(0,dp(a,6),0,dp(a,6)); b.setLayoutParams(p); return b;
     }
-    static void input(Activity a, EditText e) {
+    static void input(android.content.Context a, EditText e) {
         e.setTextColor(WHITE); e.setHintTextColor(MUTED); e.setTextSize(18); e.setPadding(dp(a,18),dp(a,18),dp(a,18),dp(a,18)); e.setBackground(panel(0xb3111d3d,a));
     }
     static LinearLayout choices(Activity a, String[] names, int selected, java.util.function.IntConsumer onSelect) {

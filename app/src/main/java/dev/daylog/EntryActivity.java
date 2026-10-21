@@ -8,6 +8,7 @@ import android.widget.*;
 public class EntryActivity extends Activity {
     protected void onCreate(Bundle state) {
         super.onCreate(state);
+        TrackerService.dismiss(this);
         if (Build.VERSION.SDK_INT >= 27) { setShowWhenLocked(true); setTurnScreenOn(true); }
         else { getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON); }
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -27,7 +28,8 @@ public class EntryActivity extends Activity {
         save.setOnClickListener(v -> {
             String value=input.getText().toString().trim(); if(value.codePointCount(0,value.length())<5)return;
             try (Store db = new Store(this)) { db.save(slot,value); }
-            Alarms.prefs(this).edit().remove("pending").apply(); getSystemService(NotificationManager.class).cancel(1); finish();
+            Alarms.prefs(this).edit().remove("pending").apply(); getSystemService(NotificationManager.class).cancel(1);
+            TrackerService.dismiss(this); finish();
         });
         setContentView(root);
     }

@@ -10,7 +10,11 @@ import java.nio.charset.StandardCharsets;
 public class MainActivity extends Activity {
     TextView status;
     protected void onCreate(Bundle state) { super.onCreate(state); Alarms.channel(this); }
-    protected void onResume() { super.onResume(); render(); }
+    protected void onResume() {
+        super.onResume();
+        if (Alarms.prefs(this).getBoolean("enabled",false)) { Alarms.ensureScheduled(this); TrackerService.start(this); }
+        render();
+    }
     boolean notificationsAllowed() { return getSystemService(NotificationManager.class).areNotificationsEnabled(); }
     void render() {
         LinearLayout root=Ui.column(this);
@@ -23,7 +27,7 @@ public class MainActivity extends Activity {
         int selected = Alarms.minutes(this)==5 ? 0 : Alarms.minutes(this)==10 ? 1 : 2;
         root.addView(Ui.choices(this,new String[]{"5 минут","10 минут","15 минут"},selected,index->{
             Alarms.prefs(this).edit().putInt("minutes",intervals[index]).apply();
-            if(enabled) Alarms.schedule(this); render();
+            if(enabled) { Alarms.schedule(this); TrackerService.start(this); } render();
         }));
         root.addView(Ui.text(this,"РЕЖИМ СИГНАЛА",13));
         root.addView(Ui.choices(this,new String[]{"Тихо\nбез вибрации", "Вибрация", "Вибрация\n+ звук"},Alarms.mode(this),index->{
@@ -38,13 +42,24 @@ public class MainActivity extends Activity {
                 return;
             }
             if(!Alarms.allowed(this)) { startActivity(new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM,Uri.parse("package:"+getPackageName()))); return; }
-            Alarms.prefs(this).edit().putBoolean("enabled",true).apply(); Alarms.schedule(this); render();
+            Alarms.prefs(this).edit().putBoolean("enabled",true).apply(); Alarms.schedule(this); TrackerService.start(this); render();
         });
         if(Build.VERSION.SDK_INT>=34 && !getSystemService(NotificationManager.class).canUseFullScreenIntent()) {
             Button permission=Ui.button(this,"Разрешить полноэкранные сигналы"); root.addView(permission);
             permission.setOnClickListener(v->startActivity(new Intent(Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT,Uri.parse("package:"+getPackageName()))));
         }
-        root.addView(Ui.text(this,"На разблокированном телефоне Android может показать уведомление вместо формы. Нажми на него, чтобы открыть запись.",13));
+        root.addView(Ui.text(this,"РАБОТА В ФОНЕ",13));
+        boolean overlay=Settings.canDrawOverlays(this);
+        Button overlayButton=Ui.button(this,overlay?"✓ Форма поверх приложений разрешена":"Разрешить форму поверх приложений"); root.addView(overlayButton);
+        overlayButton.setOnClickListener(v->startActivity(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,Uri.parse("package:"+getPackageName()))));
+        boolean unrestricted=getSystemService(PowerManager.class).isIgnoringBatteryOptimizations(getPackageName());
+        Button battery=Ui.button(this,unrestricted?"✓ Ограничения батареи сняты":"Снять ограничения батареи"); root.addView(battery);
+        battery.setOnClickListener(v->{
+            Intent settings=new Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS);
+            Toast.makeText(this,"Выбери «Все приложения», найди «Мой день» и отключи оптимизацию",Toast.LENGTH_LONG).show();
+            startActivity(settings);
+        });
+        root.addView(Ui.text(this,"Для формы на экране блокировки разреши полноэкранные сигналы. Для формы поверх открытых приложений — показ поверх окон. Смахивание из недавних не выключает напоминания. На некоторых телефонах также нужно разрешить автозапуск в настройках производителя.",13));
         Button manual=Ui.button(this,"Записать сейчас"); root.addView(manual);
         manual.setOnClickListener(v->startActivity(new Intent(this,EntryActivity.class)));
         Button export=Ui.button(this,"Экспортировать всё в .txt"); root.addView(export);

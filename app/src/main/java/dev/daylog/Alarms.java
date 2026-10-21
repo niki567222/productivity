@@ -19,10 +19,14 @@ final class Alarms {
         c.getSystemService(AlarmManager.class).setAlarmClock(new AlarmManager.AlarmClockInfo(next, show), pending(c));
         prefs(c).edit().putLong("next", next).apply();
     }
+    static void ensureScheduled(Context c) {
+        if (prefs(c).getLong("next", 0) <= System.currentTimeMillis()) schedule(c);
+    }
     static void stop(Context c) {
         prefs(c).edit().putBoolean("enabled", false).remove("pending").remove("next").apply();
         c.getSystemService(AlarmManager.class).cancel(pending(c));
         c.getSystemService(NotificationManager.class).cancel(1);
+        c.stopService(new Intent(c, TrackerService.class));
     }
     static void channel(Context c) {
         String[] names = {"Без звука и вибрации", "Только вибрация", "Колокольчик и вибрация"};
